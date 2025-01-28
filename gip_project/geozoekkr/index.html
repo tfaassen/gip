@@ -3,203 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Geozoekkr expiriment</title>
+    <title>Startpagina</title>
     <style>
-        body, html {
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
             margin: 0;
-            padding: 0;
-            height: 100%;
-            overflow: hidden;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
         }
 
-        #street-view {
-            height: 100%;
-            width: 100%;
-        }
-
-        /* Container voor de uitklapbare kaart */
-        #map-container {
-            position: absolute;
-            bottom: 10px;
-            right: 10px;
-            width: 500px;
-            height: 300px;
-            transition: all 0.3s ease-in-out;
-            z-index: 10; /* Zorg dat de kaart bovenop ligt */
-            background-color: white;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        /* Verborgen status van de kaart */
-        #map-container.collapsed {
-            width: 50px;
-            height: 50px;
-        }
-
-        /* Knop om de kaart uit te klappen */
-        #toggle-map {
-            position: absolute;
-            top: 5px;
-            left: 5px;
-            background-color: white;
-            border: 1px solid #ccc;
-            border-radius: 3px;
-            padding: 5px;
-            font-size: 12px;
+        button {
+            padding: 15px 30px;
+            font-size: 18px;
+            color: rgb(255, 255, 255);
+            background-color: #066806;
+            border: none;
+            border-radius: 5px;
             cursor: pointer;
-            z-index: 20;
+            transition: background-color 0.3s ease;
         }
 
-        #map {
-            width: 100%;
-            height: 100%;
+        button:hover {
+            background-color: #000000;
         }
     </style>
 </head>
 <body>
-    <div id="street-view"></div>
-
-    <!-- Container voor de uitklapbare kaart -->
-    <div id="map-container" class="collapsed">
-        <div id="toggle-map">▲</div>
-        <div id="map"></div>
-    </div>
-
-    <script>
-        function initMap() {
-            const streetViewService = new google.maps.StreetViewService();
-            const streetViewContainer = document.getElementById('street-view');
-            const mapContainer = document.getElementById('map-container');
-            const toggleMapButton = document.getElementById('toggle-map');
-            const mapElement = document.getElementById('map');
-
-            let map;
-            let marker = null; // Marker om de aangeklikte locatie te tonen
-            let selectedCoordinates = null; // Variabele om coördinaten op te slaan
-            let streetViewStartCoordinates = null; // Coördinaten van de Street View-startlocatie
-
-            // Functie om een willekeurige locatie te genereren
-            function getRandomLocation() {
-                const lat = (Math.random() * 180 - 90).toFixed(6); // Breedtegraad (-90 tot 90)
-                const lng = (Math.random() * 360 - 180).toFixed(6); // Lengtegraad (-180 tot 180)
-                return { lat: parseFloat(lat), lng: parseFloat(lng) };
-            }
-
-            // Functie om een Street View panorama te laden
-            function loadStreetView(location) {
-                streetViewService.getPanorama(
-                    { location: location, radius: 5000 },
-                    (data, status) => {
-                        if (status === google.maps.StreetViewStatus.OK) {
-                            streetViewStartCoordinates = {
-                                lat: data.location.latLng.lat(),
-                                lng: data.location.latLng.lng(),
-                            };
-
-                            const panorama = new google.maps.StreetViewPanorama(streetViewContainer, {
-                                position: data.location.latLng,
-                                pov: { heading: 0, pitch: 0 },
-                                zoom: 1,
-                                fullscreenControl: false,
-                                enableCloseButton: false,
-                                addressControl: false,
-                                linksControl: false,
-                                showRoadLabels: false,
-                            });
-
-                            console.log("Street View startlocatie:", streetViewStartCoordinates);
-                        } else {
-                            console.log("Geen Street View gevonden op locatie:", location);
-                            findRandomStreetView();
-                        }
-                    }
-                );
-            }
-
-            // Functie om een willekeurige locatie te vinden
-            function findRandomStreetView() {
-                const randomLocation = getRandomLocation();
-                loadStreetView(randomLocation);
-            }
-
-            // Functie om de afstand tussen twee coördinaten te berekenen (Haversine-formule)
-            function calculateDistance(coord1, coord2) {
-                const R = 6371; // Straal van de aarde in kilometers
-                const dLat = degreesToRadians(coord2.lat - coord1.lat);
-                const dLng = degreesToRadians(coord2.lng - coord1.lng);
-                const a =
-                    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                    Math.cos(degreesToRadians(coord1.lat)) *
-                    Math.cos(degreesToRadians(coord2.lat)) *
-                    Math.sin(dLng / 2) *
-                    Math.sin(dLng / 2);
-                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-                return R * c; // Afstand in kilometers
-            }
-
-            // Hulpfunctie om graden naar radialen te converteren
-            function degreesToRadians(degrees) {
-                return degrees * (Math.PI / 180);
-            }
-
-            // Toggle de kaartweergave (uitklappen of inklappen)
-            toggleMapButton.addEventListener('click', () => {
-                const isCollapsed = mapContainer.classList.toggle('collapsed');
-                toggleMapButton.textContent = isCollapsed ? '▲' : '▼'; // Pas de knop aan
-            });
-
-            // Maak de kleine wereldkaart
-            map = new google.maps.Map(mapElement, {
-                zoom: 1, // Uitgezoomd op de hele wereld
-                center: { lat: 0, lng: 0 }, // Centraal punt op de evenaar (vaste positie)
-                disableDefaultUI: true, // Verwijder standaard UI
-            });
-
-            // Voeg een kliklistener toe aan de kaart
-            map.addListener('click', (event) => {
-                const clickedLocation = event.latLng;
-
-                // Update of voeg een marker toe
-                if (marker) {
-                    marker.setPosition(clickedLocation);
-                } else {
-                    marker = new google.maps.Marker({
-                        position: clickedLocation,
-                        map: map,
-                    });
-                }
-
-                // Sla de geselecteerde coördinaten op
-                selectedCoordinates = {
-                    lat: clickedLocation.lat().toFixed(6),
-                    lng: clickedLocation.lng().toFixed(6),
-                };
-
-                console.log("Geselecteerde coördinaten:", selectedCoordinates);
-
-                // Bereken de afstand als de Street View-startlocatie bekend is
-                if (streetViewStartCoordinates) {
-                    const distance = calculateDistance(
-                        streetViewStartCoordinates,
-                        selectedCoordinates
-                    );
-
-                    console.log(
-                        `Afstand van Street View startlocatie tot aangeklikte locatie: ${distance.toFixed(2)} km`
-                    );
-                } else {
-                    console.log("Street View startlocatie is nog niet bekend.");
-                }
-            });
-
-            // Start de zoektocht naar een willekeurige Street View
-            findRandomStreetView();
-        }
-    </script>
-
-    <!-- Google Maps API -->
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB41DRUbKWJHPxaFjMAwdrzWzbVKartNGg&libraries=&v=weekly&callback=initMap"></script>
+    <button onclick="window.location.href='locatie.html'">Start</button>
 </body>
 </html>
