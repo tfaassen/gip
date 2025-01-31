@@ -11,13 +11,30 @@
             height: 100%;
             overflow: hidden;
         }
+        #timer-container {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 20px;
+            font-weight: bold;
+            background: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+        }
+
+        #timer {
+            color: green;
+        }
+
 
         #street-view {
             height: 100%;
             width: 100%;
         }
 
-        /* Container voor de uitklapbare kaart */
         #map-container {
             position: absolute;
             bottom: 10px;
@@ -25,20 +42,18 @@
             width: 500px;
             height: 300px;
             transition: all 0.3s ease-in-out;
-            z-index: 10; /* Zorg dat de kaart bovenop ligt */
+            z-index: 10;
             background-color: white;
             border: 1px solid #ccc;
             border-radius: 8px;
             overflow: hidden;
         }
 
-        /* Verborgen status van de kaart */
         #map-container.collapsed {
             width: 50px;
             height: 50px;
         }
 
-        /* Knop om de kaart uit te klappen */
         #toggle-map {
             position: absolute;
             top: 5px;
@@ -56,10 +71,36 @@
             width: 100%;
             height: 100%;
         }
+
+        /* Zoekknop stijl, nu boven de kaart */
+        #search-button {
+            position: absolute;
+            top: 10px; /* Plaats de knop boven de kaart */
+            left: 10px;
+            background-color: #066806;
+            color: white;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: none; /* Begin met de knop verborgen */
+            z-index: 15; /* Zorg dat de knop boven de kaart komt */
+        }
+
+        #search-button:hover {
+            background-color: #000000;
+        }
     </style>
 </head>
 <body>
+    <div id="timer-container">
+        Tijd over: <span id="timer">2:30</span> 
+    </div>    
     <div id="street-view"></div>
+
+    <!-- Zoekknop boven de kaart -->
+    <button id="search-button">Bekijk Afstand</button>
 
     <!-- Container voor de uitklapbare kaart -->
     <div id="map-container" class="collapsed">
@@ -68,22 +109,27 @@
     </div>
 
     <script>
+        let panorama ;
         function initMap() {
             const streetViewService = new google.maps.StreetViewService();
             const streetViewContainer = document.getElementById('street-view');
             const mapContainer = document.getElementById('map-container');
             const toggleMapButton = document.getElementById('toggle-map');
             const mapElement = document.getElementById('map');
-
+            const searchButton = document.getElementById('search-button');
+            
             let map;
-            let marker = null; // Marker om de aangeklikte locatie te tonen
-            let selectedCoordinates = null; // Variabele om coördinaten op te slaan
-            let streetViewStartCoordinates = null; // Coördinaten van de Street View-startlocatie
+            let marker = null;
+            let selectedCoordinates = null;
+            let streetViewStartCoordinates = null;
+
+            // Startlocatie (bijv. een specifieke locatie)
+            const startCoordinates = { lat: 52.379189, lng: 4.900826 }; // Amsterdam als voorbeeld
 
             // Functie om een willekeurige locatie te genereren
             function getRandomLocation() {
-                const lat = (Math.random() * 180 - 90).toFixed(6); // Breedtegraad (-90 tot 90)
-                const lng = (Math.random() * 360 - 180).toFixed(6); // Lengtegraad (-180 tot 180)
+                const lat = (Math.random() * 180 - 90).toFixed(6);
+                const lng = (Math.random() * 360 - 180).toFixed(6);
                 return { lat: parseFloat(lat), lng: parseFloat(lng) };
             }
 
@@ -98,7 +144,7 @@
                                 lng: data.location.latLng.lng(),
                             };
 
-                            const panorama = new google.maps.StreetViewPanorama(streetViewContainer, {
+                            panorama = new google.maps.StreetViewPanorama(streetViewContainer, {
                                 position: data.location.latLng,
                                 pov: { heading: 0, pitch: 0 },
                                 zoom: 1,
@@ -108,8 +154,9 @@
                                 linksControl: false,
                                 showRoadLabels: false,
                             });
-
-                            console.log("Street View startlocatie:", streetViewStartCoordinates);
+                            if (!timerStarted) {
+                                startTimer();
+                                timerStarted = true;} // Zorg ervoor dat de timer niet meerdere keren start
                         } else {
                             console.log("Geen Street View gevonden op locatie:", location);
                             findRandomStreetView();
@@ -118,13 +165,14 @@
                 );
             }
 
+
             // Functie om een willekeurige locatie te vinden
             function findRandomStreetView() {
                 const randomLocation = getRandomLocation();
                 loadStreetView(randomLocation);
             }
 
-            // Functie om de afstand tussen twee coördinaten te berekenen (Haversine-formule)
+            // Functie om de afstand tussen twee coördinaten te berekenen
             function calculateDistance(coord1, coord2) {
                 const R = 6371; // Straal van de aarde in kilometers
                 const dLat = degreesToRadians(coord2.lat - coord1.lat);
@@ -144,24 +192,23 @@
                 return degrees * (Math.PI / 180);
             }
 
-            // Toggle de kaartweergave (uitklappen of inklappen)
+            // Toggle de kaartweergave
             toggleMapButton.addEventListener('click', () => {
                 const isCollapsed = mapContainer.classList.toggle('collapsed');
-                toggleMapButton.textContent = isCollapsed ? '▲' : '▼'; // Pas de knop aan
+                toggleMapButton.textContent = isCollapsed ? '▲' : '▼';
             });
 
-            // Maak de kleine wereldkaart
+            // Maak de kaart
             map = new google.maps.Map(mapElement, {
-                zoom: 1, // Uitgezoomd op de hele wereld
-                center: { lat: 0, lng: 0 }, // Centraal punt op de evenaar (vaste positie)
-                disableDefaultUI: true, // Verwijder standaard UI
+                zoom: 1,
+                center: startCoordinates,
+                disableDefaultUI: true,
             });
 
             // Voeg een kliklistener toe aan de kaart
             map.addListener('click', (event) => {
                 const clickedLocation = event.latLng;
 
-                // Update of voeg een marker toe
                 if (marker) {
                     marker.setPosition(clickedLocation);
                 } else {
@@ -171,31 +218,118 @@
                     });
                 }
 
-                // Sla de geselecteerde coördinaten op
                 selectedCoordinates = {
                     lat: clickedLocation.lat().toFixed(6),
                     lng: clickedLocation.lng().toFixed(6),
                 };
 
-                console.log("Geselecteerde coördinaten:", selectedCoordinates);
-
-                // Bereken de afstand als de Street View-startlocatie bekend is
-                if (streetViewStartCoordinates) {
-                    const distance = calculateDistance(
-                        streetViewStartCoordinates,
-                        selectedCoordinates
-                    );
-
-                    console.log(
-                        `Afstand van Street View startlocatie tot aangeklikte locatie: ${distance.toFixed(2)} km`
-                    );
-                } else {
-                    console.log("Street View startlocatie is nog niet bekend.");
-                }
+                // Zorg ervoor dat de zoekknop zichtbaar wordt
+                searchButton.style.display = 'block'; // De knop wordt zichtbaar na een klik op de kaart
             });
 
             // Start de zoektocht naar een willekeurige Street View
             findRandomStreetView();
+
+
+            let timerStarted = false; // Controleer of de timer al gestart is
+            let startTime;
+            let streetViewLocked = false;
+            let elapsedTime = 0; 
+            const TIME_LIMIT = 150; // 2 minuten en 30 seconden 150 seconden
+            const timerElement = document.getElementById("timer");
+
+
+            window.onload = function () {
+                startTime = Date.now();
+                updateTimer();
+            };
+            function updateTimer() {
+                function update() {
+                    elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+                    let remainingTime = TIME_LIMIT - elapsedTime;
+
+                    if (remainingTime <= 0) {
+                        clearInterval(interval);
+                        lockStreetView();
+                        timerElement.textContent = "0:00";
+                        timerElement.style.color = "red"; // Maak de timer rood als de tijd op is
+                        return;
+                    }if (remainingTime <= 30) {
+                        timerElement.style.color = "orange";
+                    }
+                    let minutes = Math.floor(remainingTime / 60);
+                    let seconds = remainingTime % 60;
+                    timerElement.textContent = `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+                }
+                update();
+                let interval = setInterval(update, 1000);
+            }
+            function lockStreetView() {
+                if (panorama) {
+                    panorama.setOptions({
+                        disableDefaultUI: true, // Verwijder alle UI-knoppen
+                        scrollwheel: true, 
+                        panControl: false, // Verwijder pan-controle
+                        zoomControl: false, // Verwijder zoom-controle
+                        draggable: false, // Maak de kaart niet versleepbaar
+                        linksControl: false, // Voorkom dat gebruikers naar andere locaties springen
+                        motionTracking: false, // Schakel bewegingsdetectie (mobiel) uit
+                        motionTrackingControl: false, // Verberg bewegingsdetectie-knop
+                        clickToGo: false,
+                        keyboardShortcuts: false
+                    });
+                    window.addEventListener(
+                        'keydown',
+                        (event) => {
+                            if (
+                            (
+                                event.key === 'ArrowUp' || // Move forward
+                                event.key === 'ArrowDown' || // Move forward
+                                event.key === 'ArrowLeft' || // Pan left
+                                event.key === 'ArrowRight' || // Pan right
+                                event.key === '+' || // Zoom in
+                                event.key === '=' || // Zoom in
+                                event.key === '_' || // Zoom out
+                                event.key === '-' // Zoom out
+                            ) &&
+                            !event.metaKey &&
+                            !event.altKey &&
+                            !event.ctrlKey
+                            ) {
+                            event.stopPropagation()
+                            };
+                        },
+                    { capture: true },
+                );
+                    alert("Tijd voorbij! Je kunt niet meer bewegen.");
+                }
+            }
+            function stopTimer() {
+                return Math.min(elapsedTime, TIME_LIMIT);
+            }
+            function calculateScore(distance) {
+                let score = 5000;
+                if (distance <= 100) {
+                    score -= distance * 5;
+                } else {
+                    score -= (100 * 5) + ((distance - 100) * 15);
+                }
+                return Math.max(Math.round(score), 0); // Zorg dat de score niet negatief wordt
+            }
+
+            // Zoekknop event listener (bestaand script aanpassen)
+            searchButton.addEventListener('click', () => {
+                if (selectedCoordinates && streetViewStartCoordinates) {
+                    const distance = calculateDistance(streetViewStartCoordinates, selectedCoordinates);
+                    const searchTime = stopTimer();
+                    const score = calculateScore(distance);
+
+                    // Redirect naar resultaat.html met alle gegevens
+                    window.location.href = `resultaat.html?distance=${distance.toFixed(2)}&startLat=${streetViewStartCoordinates.lat}&startLng=${streetViewStartCoordinates.lng}&selectedLat=${selectedCoordinates.lat}&selectedLng=${selectedCoordinates.lng}&time=${searchTime}&score=${score}`;
+                }
+            });
+
+            
         }
     </script>
 

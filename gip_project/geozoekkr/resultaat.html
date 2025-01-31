@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultaat - Afstand</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: Arial, sans-serif;
+        }
+
+        #result-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px;
+        }
+
+        #distance-display {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        #map {
+            width: 100%;
+            height: 80vh;
+        }
+    </style>
+</head>
+<body>
+    <div id="result-container">
+        <div id="distance-display">Afstand: <span id="distance"></span> km</div>
+        <div id="time-display">Zoektijd: <span id="time"></span></div>
+        <div id="score-display">Score: <span id="score"></span></div>
+        <div id="map"></div>
+        <button onclick="window.location.href='index.html'">opnieuw spelen</button>
+    </div>
+
+    <script>
+        function initResultMap() {
+            // Haal de afstand en coördinaten op uit de URL-parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const distance = urlParams.get('distance');
+            const searchTime = urlParams.get('time'); // Haal de zoektijd op
+            const score = urlParams.get('score');
+            const startLat = parseFloat(urlParams.get('startLat'));
+            const startLng = parseFloat(urlParams.get('startLng'));
+            const selectedLat = parseFloat(urlParams.get('selectedLat'));
+            const selectedLng = parseFloat(urlParams.get('selectedLng'));
+
+            // Toon de afstand op de pagina
+            document.getElementById('distance').textContent = distance;
+            document.getElementById('time').textContent = `${searchTime} seconden`;
+
+            // Maak de kaart
+            const map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 4,
+                center: { lat: (startLat + selectedLat) / 2, lng: (startLng + selectedLng) / 2 }, // Center tussen de twee punten
+            });
+            document.getElementById('score').textContent = `${score} punten`;
+
+
+            // Voeg markers toe voor de startlocatie en de geselecteerde locatie
+            const startMarker = new google.maps.Marker({
+                position: { lat: startLat, lng: startLng },
+                map: map,
+                label: 'A', // Label voor startpunt
+                title: 'Street View Startlocatie',
+            });
+
+            const selectedMarker = new google.maps.Marker({
+                position: { lat: selectedLat, lng: selectedLng },
+                map: map,
+                label: 'B', // Label voor geselecteerd punt
+                title: 'Geselecteerde Locatie',
+            });
+
+            // Teken een lijn tussen de twee punten
+            const line = new google.maps.Polyline({
+                path: [
+                    { lat: startLat, lng: startLng },
+                    { lat: selectedLat, lng: selectedLng },
+                ],
+                geodesic: true,
+                strokeColor: '#FF0000',
+                strokeOpacity: 1.0,
+                strokeWeight: 2,
+            });
+
+            // Voeg de lijn toe aan de kaart
+            line.setMap(map);
+        }
+    </script>
+
+    <!-- Google Maps API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB41DRUbKWJHPxaFjMAwdrzWzbVKartNGg&libraries=&v=weekly&callback=initResultMap"></script>
+</body>
+</html>
