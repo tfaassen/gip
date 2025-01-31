@@ -1,2 +1,3 @@
 dit is een geozoekkr gip project
-de index.html is de startpagina
+de startpagina.html is de startpagina
+  
