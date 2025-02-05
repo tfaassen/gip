@@ -3,90 +3,158 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resultaat - Afstand</title>
+    <title>Resultaat - Geozoekkr</title>
     <link rel="stylesheet" href="style_resultaat.css">
 </head>
 <body>
+
+    <h1>Jouw Resultaat</h1>
+
+    <!-- Container voor resultaten -->
     <div id="result-container">
-        <div id="distance-display">Afstand: <span id="distance"></span> km</div>
-        <div id="time-display">Zoektijd: <span id="time"></span></div>
-        <div id="score-display">Score: <span id="score"></span></div>
-        <div id="map"></div>
-        <button onclick="window.location.href='index.html'">Opnieuw Singleplayer Spelen</button>
-        <button onclick="window.location.href='startpagina.html'">Terug naar Startpagina</button>
+        <div class="result-item">
+            <h3>Afstand</h3>
+            <p id="distance"></p>
+        </div>
+        <div class="result-item">
+            <h3>Score</h3>
+            <p id="score"></p>
+        </div>
+        <div class="result-item">
+            <h3>Tijd</h3>
+            <p id="time"></p>
+        </div>
     </div>
 
+    <!-- Container voor de kaart -->
+    <div id="map-container">
+        <div id="map"></div>
+    </div>
+
+    <!-- Container voor knoppen -->
+    <div id="button-container">
+        <button onclick="window.location.href='locatie.html'">Speel Opnieuw</button>
+        <button onclick="window.location.href='startpagina.html'">Terug naar Start</button>
+    </div>
+
+    <div id="multiplayer-container" style="display:none;">
+        <h2>Spelers in de lobby:</h2>
+        <ul id="player-list"></ul>
+
+        <button onclick="submitScore()">Verstuur Score</button>
+        <button onclick="viewLeaderboard()">Bekijk Leaderboard</button>
+
+        <h2>Winnaar:</h2>
+        <div id="winner-result"></div>
+    </div>
+
+    <div id="leaderboard" style="display:none;">
+        <h2>Leaderboard</h2>
+        <ul id="leaderboard-list"></ul>
+    </div>
+
+
     <script>
-        function initResultMap() {
-            // Haal de afstand en coördinaten op uit de URL-parameters
-            const urlParams = new URLSearchParams(window.location.search);
-            const distance = urlParams.get('distance');
-            const searchTime = urlParams.get('time'); // Haal de zoektijd op
-            const score = urlParams.get('score');
-            const startLat = parseFloat(urlParams.get('startLat'));
-            const startLng = parseFloat(urlParams.get('startLng'));
-            const selectedLat = parseFloat(urlParams.get('selectedLat'));
-            const selectedLng = parseFloat(urlParams.get('selectedLng'));
+        // Haal de query parameters op uit de URL
+        const params = new URLSearchParams(window.location.search);
+        const distance = params.get("distance");
+        const score = params.get("score");
+        const time = params.get("time");
+        const startLat = parseFloat(params.get("startLat"));
+        const startLng = parseFloat(params.get("startLng"));
+        const selectedLat = parseFloat(params.get("selectedLat"));
+        const selectedLng = parseFloat(params.get("selectedLng"));
 
-            // Controleer of alle vereiste parameters beschikbaar zijn
-            if (!distance || !searchTime || !score || !startLat || !startLng || !selectedLat || !selectedLng) {
-                alert("Er is een probleem met de gegevens. Probeer opnieuw.");
-                return;
+        // Toon de opgehaalde waarden op de pagina
+        document.getElementById("distance").textContent = distance + " km";
+        document.getElementById("score").textContent = score;
+        document.getElementById("time").textContent = time + " sec";
+
+        // Controleer of de coördinaten geldig zijn
+        if (!isNaN(startLat) && !isNaN(startLng) && !isNaN(selectedLat) && !isNaN(selectedLng)) {
+            function initMap() {
+                const startLocation = { lat: startLat, lng: startLng };
+                const selectedLocation = { lat: selectedLat, lng: selectedLng };
+
+                const map = new google.maps.Map(document.getElementById("map"), {
+                    disableDefaultUI: false,
+                });
+
+                // Voeg markers toe voor beide locaties
+                new google.maps.Marker({
+                    position: startLocation,
+                    map: map,
+                    label: "S", // S voor Start
+                    title: "Startlocatie",
+                });
+
+                new google.maps.Marker({
+                    position: selectedLocation,
+                    map: map,
+                    label: "G", // G voor Gekozen locatie
+                    title: "Jouw gekozen locatie",
+                });
+
+                // Trek een lijn tussen de twee punten
+                new google.maps.Polyline({
+                    path: [startLocation, selectedLocation],
+                    geodesic: true,
+                    strokeColor: "#FF0000",
+                    strokeOpacity: 1.0,
+                    strokeWeight: 2,
+                    map: map,
+                });
+
+                // Pas automatisch het zichtbare gebied aan zodat beide punten in beeld zijn
+                const bounds = new google.maps.LatLngBounds();
+                bounds.extend(startLocation);
+                bounds.extend(selectedLocation);
+                map.fitBounds(bounds);
             }
 
-            // Toon de afstand, zoektijd, en score
-            document.getElementById('distance').textContent = distance;
-            document.getElementById('time').textContent = `${searchTime} seconden`;
-            document.getElementById('score').textContent = `${score} punten`;
-
-            // Maak de kaart
-            const map = new google.maps.Map(document.getElementById('map'), {
-                zoom: 6, // Beginzoomniveau, kan aangepast worden op basis van afstand
-                center: { lat: (startLat + selectedLat) / 2, lng: (startLng + selectedLng) / 2 },
-            });
-
-            // Voeg markers toe voor de startlocatie en de geselecteerde locatie
-            const startMarker = new google.maps.Marker({
-                position: { lat: startLat, lng: startLng },
-                map: map,
-                label: 'A', // Label voor startpunt
-                title: 'Street View Startlocatie',
-            });
-
-            const selectedMarker = new google.maps.Marker({
-                position: { lat: selectedLat, lng: selectedLng },
-                map: map,
-                label: 'B', // Label voor geselecteerd punt
-                title: 'Geselecteerde Locatie',
-            });
-
-            // Teken een lijn tussen de twee punten
-            const line = new google.maps.Polyline({
-                path: [
-                    { lat: startLat, lng: startLng },
-                    { lat: selectedLat, lng: selectedLng },
-                ],
-                geodesic: true,
-                strokeColor: '#FF0000',
-                strokeOpacity: 1.0,
-                strokeWeight: 2,
-            });
-
-            line.setMap(map);
-
-            // Pas zoom aan afhankelijk van de afstand
-            const distanceInMeters = distance * 1000;
-            if (distanceInMeters < 50000) {
-                map.setZoom(7); // Inzoomen bij korte afstanden
-            } else if (distanceInMeters > 50000 && distanceInMeters < 200000) {
-                map.setZoom(6); // Standaard zoom voor medium afstanden
-            } else {
-                map.setZoom(5); // Verre zoom voor grote afstanden
-            }
+            window.initMap = initMap;
+        } else {
+            console.error("Ongeldige coördinaten ontvangen.");
         }
+        // Statistieken opslaan in localStorage
+        function updatePlayerStats(distance, score, time) {
+            let stats = JSON.parse(localStorage.getItem("geozoekkrStats")) || {
+                gamesPlayed: 0,
+                totalDistance: 0,
+                totalScore: 0,
+                bestScore: 0,
+                };
+
+            stats.gamesPlayed++;
+            stats.totalDistance += parseFloat(distance);
+            stats.totalScore += parseInt(score);
+            stats.bestScore = Math.max(stats.bestScore, score);
+            localStorage.setItem("geozoekkrStats", JSON.stringify(stats));
+        }
+        // Roep deze functie aan zodra een spel is afgerond
+        updatePlayerStats(distance, score, time);
+        function checkAchievements(distance, score) {
+            let achievements = JSON.parse(localStorage.getItem("geozoekkrAchievements")) || [];
+
+            if (distance < 0.01 && !achievements.includes("Perfecte gok")) {
+                achievements.push("Perfecte gok");
+                alert("🏆 Je hebt de ‘Perfecte gok’ badge verdiend!");
+            }
+
+            if (score === 5000 && !achievements.includes("Max Score")) {
+                achievements.push("Max Score");
+                alert("🏆 Je hebt de ‘Max Score’ badge verdiend!");
+            }
+
+            localStorage.setItem("geozoekkrAchievements", JSON.stringify(achievements));
+        }
+
+        checkAchievements(distance, score);
+
     </script>
 
     <!-- Google Maps API -->
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB41DRUbKWJHPxaFjMAwdrzWzbVKartNGg&libraries=&v=weekly&callback=initResultMap"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB41DRUbKWJHPxaFjMAwdrzWzbVKartNGg&callback=initMap" async defer></script>
+
 </body>
 </html>

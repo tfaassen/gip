@@ -8,21 +8,44 @@ body {
     font-family: Arial, sans-serif;
     background-color: #f4f4f4;
     text-align: center;
+    background-image: url('background.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    position: relative;
 }
 
+/* Overlay voor de achtergrond voor beter contrast */
+body::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.0); /* Zwart met 40% transparantie */
+    z-index: -1; /* Zorg ervoor dat het achter de inhoud zit */
+}
+
+/* Titel styling */
 h1 {
     color: #066806;
-    margin-bottom: 10px;
+    margin-bottom: 20px;
+    font-size: 36px;
+    font-weight: bold;
 }
 
+/* Paragraaf styling */
 p {
     max-width: 600px;
     font-size: 18px;
     line-height: 1.5;
     color: #333;
-    margin-bottom: 20px;
+    margin-bottom: 30px;
+    padding: 0 20px;
 }
 
+/* Knop styling */
 button {
     padding: 15px 30px;
     font-size: 18px;
@@ -33,10 +56,50 @@ button {
     cursor: pointer;
     transition: all 0.3s ease;
     margin-top: 20px;
+    width: 250px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 button:hover {
     background-color: #000000;
     transform: scale(1.05);
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+button:focus {
+    outline: none;
+    box-shadow: 0px 0px 0px 2px #066806; /* Groene focus-ring voor zichtbaarheid */
+}
+
+/* Responsieve aanpassingen voor mobiele apparaten */
+@media (max-width: 600px) {
+    h1 {
+        font-size: 28px;
+    }
+
+    p {
+        font-size: 16px;
+        padding: 0 15px;
+    }
+
+    button {
+        width: 80%;
+        font-size: 20px;
+    }
+}
+#start-container, #multiplayer-container {
+    background: white;
+    width: 50%;
+    margin: 100px auto;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+input {
+    padding: 10px;
+    font-size: 16px;
+    width: 80%;
+    margin: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
 }

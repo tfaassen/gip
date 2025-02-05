@@ -1,9 +1,13 @@
+/* Algemene body en html styling */
 body, html {
     margin: 0;
     padding: 0;
     height: 100%;
     overflow: hidden;
+    font-family: Arial, sans-serif; /* Voeg een net lettertype toe */
 }
+
+/* Styling voor de timer */
 #timer-container {
     position: absolute;
     top: 10px;
@@ -16,25 +20,45 @@ body, html {
     border-radius: 10px;
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
     z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 #timer {
     color: green;
 }
 
+/* Progressiebalk voor de timer */
+#timer-container .progress-bar {
+    width: 100%;
+    height: 5px;
+    background-color: #ddd;
+    margin-top: 10px;
+}
 
+#timer-container .progress-bar span {
+    display: block;
+    height: 100%;
+    width: 100%; /* Vul volledig in afhankelijk van de tijd */
+    background-color: green; /* Voortgang is groen */
+    transition: width 1s ease-out; /* Langzamere overgang van de voortgangsbalk */
+}
+
+/* Styling voor de Street View container */
 #street-view {
     height: 100%;
     width: 100%;
 }
 
+/* Container voor de uitklapbare kaart */
 #map-container {
     position: absolute;
     bottom: 10px;
     right: 10px;
     width: 500px;
     height: 300px;
-    transition: all 0.3s ease-in-out;
+    transition: all 0.5s ease-in-out; /* Verlengde tijd voor een soepelere overgang */
     z-index: 10;
     background-color: white;
     border: 1px solid #ccc;
@@ -42,11 +66,13 @@ body, html {
     overflow: hidden;
 }
 
+/* Collapsing effect voor de kaart */
 #map-container.collapsed {
     width: 50px;
     height: 50px;
 }
 
+/* Toggle knop om de kaart in/uit te klappen */
 #toggle-map {
     position: absolute;
     top: 5px;
@@ -65,7 +91,7 @@ body, html {
     height: 100%;
 }
 
-/* Zoekknop stijl, nu boven de kaart */
+/* Zoekknop boven de kaart */
 #search-button {
     position: absolute;
     top: 10px; /* Plaats de knop boven de kaart */
@@ -77,10 +103,56 @@ body, html {
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    display: none; /* Begin met de knop verborgen */
+    display: none; /* De knop is eerst verborgen */
     z-index: 15; /* Zorg dat de knop boven de kaart komt */
+    transition: background-color 0.3s, transform 0.3s; /* Soepelere interactie */
 }
 
 #search-button:hover {
     background-color: #000000;
+    transform: scale(1.1); /* Knop vergroot iets bij hover */
+}
+
+/* Versterk de zoekknop visueel wanneer de timer bijna op is */
+#search-button.nearly-done {
+    background-color: #ff8c00; /* Oranje kleur als de tijd bijna op is */
+}
+
+/* Styling voor de knoppen in de timercontainer */
+#timer-container button {
+    padding: 12px 24px;
+    background-color: #066806;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 10px;
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+#timer-container button:hover {
+    background-color: #000000;
+    transform: scale(1.05); /* Vergroot de knop bij hover */
+}
+
+/* Responsieve styling voor kleinere schermen */
+@media (max-width: 600px) {
+    #timer-container {
+        font-size: 16px; /* Kleinere timertekst op mobiele apparaten */
+    }
+
+    #search-button {
+        width: 100%; /* Zoekknop neemt volledige breedte in op kleinere schermen */
+        padding: 12px; /* Meer ruimte rond de knop */
+    }
+
+    #map-container {
+        width: 90%; /* Kaartcontainer neemt meer ruimte in op kleinere schermen */
+        height: 200px;
+    }
+
+    #toggle-map {
+        font-size: 16px; /* Grotere tekst voor de toggle-knop op kleinere schermen */
+    }
 }

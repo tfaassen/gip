@@ -1,0 +1,21 @@
+<h1>Raad de locatie!</h1>
+<p>Wacht op andere spelers...</p>
+<div id="map"></div>
+<button onclick="sendGuess()">Plaats Gok</button>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const socket = io("http://localhost:3000");
+const roomCode = localStorage.getItem("roomCode");
+
+socket.emit("createRoom", roomCode);
+
+function sendGuess() {
+    let guess = { lat: 52.3791, lng: 4.9003, player: socket.id }; // Dummy locatie
+    socket.emit("sendGuess", { roomCode, guess });
+}
+
+socket.on("updateGuesses", (guesses) => {
+    console.log("Alle gokjes:", guesses);
+});
+</script>

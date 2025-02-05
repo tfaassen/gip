@@ -9,6 +9,9 @@
 <body>
     <div id="timer-container">
         Tijd over: <span id="timer">2:30</span> 
+        <div class="progress-bar">
+            <span id="progress-bar-fill"></span>
+        </div>
     </div>    
     <div id="street-view"></div>
 
@@ -22,6 +25,13 @@
     </div>
 
     <script>
+        let gameMode = localStorage.getItem("gameMode") || "classic";
+
+        if (gameMode === "timeLimit") {
+            startTimer(60); // 1 minuut in plaats van 2m30
+        } else if (gameMode === "team") {
+            alert("Team modus: Speel om de hoogste gezamenlijke score te halen!");
+        }
         let panorama ;
         function initMap() {
             const streetViewService = new google.maps.StreetViewService();
@@ -108,7 +118,7 @@
             // Toggle de kaartweergave
             toggleMapButton.addEventListener('click', () => {
                 const isCollapsed = mapContainer.classList.toggle('collapsed');
-                toggleMapButton.textContent = isCollapsed ? '▲' : '▼';
+                toggleMapButton.textContent = isCollapsed ? '▲' : '▼'; // Verandert de tekst van de knop
             });
 
             // Maak de kaart
@@ -160,6 +170,10 @@
                 function update() {
                     elapsedTime = Math.floor((Date.now() - startTime) / 1000);
                     let remainingTime = TIME_LIMIT - elapsedTime;
+
+                    const progressBarFill = document.getElementById('progress-bar-fill');
+                    const progressPercentage = (remainingTime / TIME_LIMIT) * 100;
+                    progressBarFill.style.width = `${progressPercentage}%`;
 
                     if (remainingTime <= 0) {
                         clearInterval(interval);
@@ -222,9 +236,19 @@
             }
             function calculateScore(distance) {
                 let score = 5000;
-                if (distance <= 100) {
-                    score -= distance * 5;
-                } else {
+                if (distance <= 4) {
+                    score -= distance * 0;
+                }
+                else if (distance <= 10) {
+                score -= (4 * 0) + ((distance -4) * 1);
+                }
+                else if (distance <= 100) {
+                    score -= (6 * 1) +((distance - 10) * 5);
+                }
+                else if (distance <= 1000) {
+                    score -= (100 * 5) + ((distance - 100) * 10);                
+                }
+                 else {
                     score -= (100 * 5) + ((distance - 100) * 15);
                 }
                 return Math.max(Math.round(score), 0); // Zorg dat de score niet negatief wordt
@@ -245,6 +269,8 @@
             
         }
     </script>
+    
+    
 
     <!-- Google Maps API -->
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB41DRUbKWJHPxaFjMAwdrzWzbVKartNGg&libraries=&v=weekly&callback=initMap"></script>
