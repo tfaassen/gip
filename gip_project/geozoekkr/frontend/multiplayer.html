@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geozoekkr - Multiplayer</title>
+    <link rel="stylesheet" href="style_multiplayer.css">
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+
+    <h1>Multiplayer Mode</h1>
+    <input type="text" id="roomCode" placeholder="Voer kamercode in">
+    <button onclick="createRoom()">Maak kamer</button>
+    <button onclick="joinRoom()">Join kamer</button>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io("http://localhost:3000");
+
+        function createRoom() {
+        let roomCode = Math.random().toString(36).substring(2, 7);
+        localStorage.setItem("roomCode", roomCode);
+        socket.emit("createRoom", roomCode);
+        window.location.href = "game.html";
+        }
+
+        function joinRoom() {
+            let roomCode = document.getElementById("roomCode").value;
+            if (roomCode) {
+                localStorage.setItem("roomCode", roomCode);
+                socket.emit("createRoom", roomCode);
+                window.location.href = "game.html";
+            } else {
+                alert("Voer een geldige kamercode in!");
+            }
+        }
+
+        socket.on("playerJoined", (playerCount) => {
+            console.log("Aantal spelers in de kamer:", playerCount);
+        });
+    </script>
+</body>
+</html>
