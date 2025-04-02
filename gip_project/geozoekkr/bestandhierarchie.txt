@@ -3,50 +3,47 @@ Hier is de bestandstructuur voor je Geozoekkr-project met alle bestanden en code
 
 📂 Geozoekkr (Projectmap)
 ├── 📂 backend (Node.js + Express + MySQL)
-│ ├── 📄 .env (Gevoelige instellingen zoals databasewachtwoord) 1
-│ ├── 📄 db.js (Databaseverbinding) 2
-│ ├── 📄 package.json (Projectconfiguratie) 3
-│ ├── 📄 package-lock.json (Afhankelijkheidsversies) 4
-│ ├── 📄 server.js (Hoofdserverbestand) 5
-| ├── 📂 routes 
-| | ├── 📄 authRoutes.js (Login- en registratiebeheer) 6
-| | ├── 📄 gameRoutes.js (Spelbeheer) 7
-│ ├── 📂 models
-│ │ ├── 📄 User.js (Database model voor gebruikers) 8
-│ │ ├── 📄 Game.js (Model voor spelgegevens) 9
-│ ├── 📂 middleware
-│ │ ├── 📄 authMiddleware.js (Authenticatiecontrole) 10
-│ ├── 📂 controllers
-│ │ ├── 📄 authController.js (Login-/registratiefunctionaliteit) 11
-│ │ ├── 📄 gameController.js (Spelbeheer en scores) 12
+│ ├── 📄 .env (api key) 
+│ ├── 📄 app.py (code voor database connectie)
+│ ├── 📄 geozoekkr.sql (sql code voor mijn database op te stellen)
 │ ├── 📂 config
-│ │ ├── 📄 database.sql (MySQL-databaseopzet) 13
-│ ├── 📂 utils
-│ │ ├── 📄 scoreCalculator.js (Scoreberekening) 14
-│
+│ │ ├── 📄 database.sql (MySQL-databaseopzet) 
 ├── 📂 frontend (HTML, CSS, JavaScript)
-│ ├── 📄 game.html (spelpagina) 15
-│ ├── 📄 index.html (Startpagina: keuze singleplayer/multiplayer) 16
-│ ├── 📄 locatie.html (singleplayer spel) 17
-│ ├── 📄 login.html (Inlogpagina) 18
-│ ├── 📄 multiplayer.html (Multiplayer modus) 19
-│ ├── 📄 register.html (Registratiepagina) 20
-│ ├── 📄 resultaat.html (Resultatenpagina) 21
-│ ├── 📄 singleplayer.html (Singleplayer modus) 22
-│ ├── 📄 scoreboard.html (Scorebord) 23
-│ ├── 📂 css
-│ │ ├── 📄 style_locatie.css (styling voor het singleplayerspel) 24
-│ │ ├── 📄 style_login.css (style voor de login) 25
-│ │ ├── 📄 style_multiplayer.css (Styling voor multiplayer) 26
-│ │ ├── 📄 style_resultaat.css (Styling voor resultatenpagina) 27
-│ │ ├── 📄 style_singleplayer.css (Styling voor singleplayer) 28
-│ │ ├── 📄 style_startpagina.css (styling voor de startpagina) 29
-│ │ ├── 📄 style_scoreboard.css (Styling voor scorebord) 30
-│ ├── 📂 js
-│ │ ├── 📄 auth.js (Login-/registratiescripts) 31
-│ │ ├── 📄 game.js (Hoofdspelcode) 32
-│ │ ├── 📄 login.js (Loginfunctionaliteit) 33
-│ │ ├── 📄 map.js (Google Maps API-functionaliteit) 34
-│ │ ├── 📄 multiplayer.js (Realtime multiplayerlogica) 35
-│ │ ├── 📄 register.js ( Registratiefunctionaliteit) 36
-│ ├── 📂 assets (Afbeeldingen, geluiden, etc.)
+│ ├── 📂 node_modules(iets van react)
+│ ├── 📂 public
+│ │ ├── 📄 index.html (de pagina die naar de localhost wordt gestuurd)
+│ │ ├── 📄 manifest.json (manifest bestand)
+│ │ ├── 📄 robots.txt
+│ ├── 📂 src
+│ │ ├── 📄 app.css ( css voor de react app)
+│ │ ├── 📄 app.js (js bestand dat alles doorstuurt naar de index.html)
+│ │ ├── 📄 index.js 
+│ │ ├── 📄 index.css
+│ │ ├── 📂 pages
+│ │ │ ├── 📄 Account.js (account pagina)
+│ │ │ ├── 📄 Home.js (home pagina (startpagina))
+│ │ │ ├── 📄 Locatie.js (geozoekkr spel )
+│ │ │ ├── 📄 Login.js ( ligin voor de accounts )
+│ │ │ ├── 📄 Multiplayer.js ( multiplayer pagina (onder constructie))
+│ │ │ ├── 📄 Register.js ( registratie pagina voor een account aan te maken)
+│ │ │ ├── 📄 Scoreboard.js ( scoreboard die je info laat zien)
+│ │ │ ├── 📄 Singleplayer.js ( singleplayer uitleg pagina)
+│ │ │ ├── 📄 PrivateRoute.js (account check)
+│ │ ├── 📂 styles
+│ │ │ ├── 📄 background.jpg (achtergrond voor iedere pagina)
+│ │ │ ├── 📄 style_account.css 
+│ │ │ ├── 📄 style_locatie.css
+│ │ │ ├── 📄 style_login.css
+│ │ │ ├── 📄 style_multiplayer.css
+│ │ │ ├── 📄 style_resultaat.css
+│ │ │ ├── 📄 style_scoreboard.css
+│ │ │ ├── 📄 style_singleplayer.css 
+│ │ │ ├── 📄 style_startpagina.css 
+│ ├── 📄 .env (environment bestand met api key)
+│ ├── 📄 .gitignore (het gitignore bestand)
+│ ├── 📄 package-lock.json (package lock bestand) 
+│ ├── 📄 package.json (package bestand) 
+│ ├── 📄 README.md 
+│ ├── 📂 node_modules (react dinges)
+│ ├── 📄 api_key_google.txt (api key)
+│ ├── 📄 bestandhierarchie.txt (dit bestand)
