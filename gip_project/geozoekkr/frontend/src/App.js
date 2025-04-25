@@ -14,6 +14,12 @@ import Account from './pages/Account';
 import Locatie from './pages/Locatie';
 import Resultaat from './pages/Resultaat';
 import Spelmodus from './pages/Spelmodus';
+import Lobby from './pages/Lobby';
+import MultiplayerGame from './pages/MultiplayerGame';
+import MultiplayerResult from './pages/MultiplayerResult';
+
+
+
 
 
 // Gebruik CORS-middleware
@@ -35,7 +41,10 @@ function App() {
         <Route path="/account" element={<PrivateRoute authenticated={isAuthenticated} element={<Account />} />} />
         <Route path="/locatie" element={<PrivateRoute authenticated={isAuthenticated} element={<Locatie />} />} />
         <Route path="/resultaat" element={<PrivateRoute authenticated={isAuthenticated} element={<Resultaat />} />} />
+        <Route path="/lobby" element={<Lobby />} />
+        <Route path="/multiplayer-game" element={<MultiplayerGame />} />
         < Route path="/" element={<Navigate to="/home" />} />
+        <Route path="/multiplayer-result" element={<MultiplayerResult />} />
       </Routes>
     </Router>
   );

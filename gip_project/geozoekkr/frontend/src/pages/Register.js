@@ -95,7 +95,7 @@ function Register() {
             placeholder="Bevestig je wachtwoord"
           />
         </div>
-        <button type="submit">Registreren</button>
+        <button type="submit" >Registreren</button>
       </form>
 
       {/* Foutmeldingen weergeven */}
