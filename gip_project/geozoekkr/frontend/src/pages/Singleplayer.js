@@ -12,9 +12,9 @@ const Singleplayer = () => {
         <ul>
           <li><strong>-0 punten per km</strong> aftrekken voor de eerste 4 km</li>
           <li><strong>-1 punt per km</strong> aftrekken tot de 10 km</li>
-          <li><strong>-5 punten per km</strong> aftrekken voor de eerste 100 km</li>
-          <li><strong>-10 punten per km</strong> aftrekken voor de eerste 1000 km</li>
-          <li><strong>-15 punten per km</strong> aftrekken voor de rest</li>
+          <li><strong>-3 punten per km</strong> aftrekken voor de eerste 100 km</li>
+          <li><strong>-4 punten per km</strong> aftrekken voor de eerste 1000 km</li>
+          <li><strong>-5 punten per km</strong> aftrekken voor de rest</li>
           <li><strong>Maximale score: 5000 punten</strong></li>
         </ul>
       </div>

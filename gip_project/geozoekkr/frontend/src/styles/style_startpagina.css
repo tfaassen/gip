@@ -14,6 +14,10 @@ body {
     background-attachment: fixed;
     position: relative;
 }
+button::before,
+button::after {
+  content: ""; /* Zorg ervoor dat hier geen extra content wordt toegevoegd */
+}
 /* Overlay voor de achtergrond voor beter contrast */
 body::before {
     content: "";

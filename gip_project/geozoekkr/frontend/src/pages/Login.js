@@ -13,23 +13,30 @@ const Login = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    try {
+      const response = await fetch('http://localhost:5000/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include', // Zorg ervoor dat cookies worden meegestuurd
+        body: JSON.stringify({ username, password }),
+      });
   
-    const response = await fetch('http://localhost:5000/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include', // Zorg ervoor dat cookies worden meegestuurd
-      body: JSON.stringify({ username, password }),
-    });
+      if (!response.ok) {
+        throw new Error('Login mislukt');
+      }
   
-    const data = await response.json();
-  
-    if (data.token) {
-      localStorage.setItem('authToken', data.token);
-      navigate('/home');
-    } else {
-      alert('Inloggen mislukt, controleer je gegevens');
+      const data = await response.json();
+      if (data.token) {
+        localStorage.setItem('authToken', data.token);
+        navigate('/home');
+      } else {
+        alert('Inloggen mislukt, controleer je gegevens');
+      }
+    } catch (error) {
+      console.error('Fout bij inloggen:', error);
+      alert('Kan geen verbinding maken met de server.');
     }
   };
 

@@ -1,20 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import '../styles/style_account.css';
-import { Navigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const Account = () => {
   const [user, setUser] = useState(null);
+  const navigate = useNavigate();
+
   const handleLogout = () => {
-    localStorage.removeItem('authToken'); // Verwijder het token
-    Navigate.push('/login'); // Redirect naar de loginpagina
+    localStorage.removeItem('authToken');
+    navigate('/login');
   };
-  
 
   useEffect(() => {
     const fetchAccountInfo = async () => {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('authToken');
       if (!token) {
-        window.location.href = '/login';
+        navigate('/login');
         return;
       }
       const response = await fetch('http://localhost:5000/account', {
@@ -24,13 +25,11 @@ const Account = () => {
       if (response.ok) {
         setUser(data);
       } else {
-        alert('Fout bij ophalen accountgegevens.');
+        alert(data.error || 'Fout bij ophalen accountgegevens.');
       }
     };
     fetchAccountInfo();
-  }, []);
-
-  
+  }, [navigate]);
 
   if (!user) return null;
 
@@ -42,13 +41,10 @@ const Account = () => {
         <p><strong>Gespeelde games:</strong> {user.gamesPlayed}</p>
         <p><strong>Totale score:</strong> {user.totalScore}</p>
         <p><strong>Beste score:</strong> {user.bestScore}</p>
+        <p><strong>Kortste tijd:</strong> {user.shortestTime}</p>
+        <p><strong>Totale speeltijd:</strong> {user.totalPlayTime}</p>
       </div>
-      <h2>Behaalde Badges</h2>
-      <ul id="achievements-list">
-        {user.achievements.map((achievement, index) => (
-          <li key={index}>{achievement}</li>
-        ))}
-      </ul>
+      <button onClick={() => navigate('/home')}>Terug naar Home</button>
       <button onClick={handleLogout}>Uitloggen</button>
     </div>
   );

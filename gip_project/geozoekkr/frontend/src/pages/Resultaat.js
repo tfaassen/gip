@@ -1,8 +1,9 @@
-import React, { useEffect } from "react"; 
+import React, { useEffect, useState ,useRef} from "react"; 
 import { useLocation, useNavigate } from "react-router-dom";
 import "../styles/style_resultaat.css";
 
 const Resultaat = () => {
+  const isSaved = useRef(false);
   const location = useLocation();
   const navigate = useNavigate();
   const {
@@ -14,7 +15,13 @@ const Resultaat = () => {
     selectedLat = 0,
     selectedLng = 0,
   } = location.state || {};
+
+  
+
   const saveGame = async () => {
+    if (isSaved.current) return; // Controleer de vlag
+    isSaved.current = true; // Stel de vlag in
+  
     const token = localStorage.getItem('authToken');
     if (!token) {
       alert('Je moet ingelogd zijn om je score op te slaan!');
@@ -28,7 +35,8 @@ const Resultaat = () => {
         'Authorization': `Bearer ${token}`,
       },
       body: JSON.stringify({
-        score, // Zorg ervoor dat de score correct wordt doorgegeven
+        score,
+        searchTime, // Verstuur de verstreken tijd
       }),
     });
   
@@ -39,11 +47,11 @@ const Resultaat = () => {
       alert(data.error || 'Er is iets misgegaan bij het opslaan van de game.');
     }
   };
-    useEffect(() => {
-      if (score) {
-        saveGame(); // Sla de game op
-      }
-    }, [score]);
+
+  useEffect(() => {
+    if (score >= 0) {
+    saveGame();
+  }}, [score]);
 
     useEffect(() => {
       if (
