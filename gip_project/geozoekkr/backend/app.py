@@ -273,6 +273,7 @@ def after_request(response):
 # Maak een nieuwe lobby
 @socketio.on('create_lobby')
 def create_lobby(data):
+    print(f"Create lobby: {data}")
     lobby_id = data['lobby_id']
     username = data['username']
 

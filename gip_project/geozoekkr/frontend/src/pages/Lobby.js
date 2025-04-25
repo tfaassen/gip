@@ -21,7 +21,7 @@ const Lobby = () => {
   
     socket.on('lobby_update', (data) => {
       console.log("Lobby update ontvangen:", data);
-      setPlayers(data.players); // Update de lijst met spelers
+      setPlayers(data.players);
     });
   
     return () => {
