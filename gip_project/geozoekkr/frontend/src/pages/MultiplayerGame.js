@@ -1,10 +1,10 @@
 import { useEffect, useState, useRef, useCallback } from "react";
-import { useNavigate ,useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import "../styles/style_locatie.css";
 
+
+
 const MultiplayerGame = () => {
-  const location = useLocation(); // Gebruik useLocation om de state te krijgen
-  const sharedLocation = location.state?.location; // Haal de gedeelde locatie op
   const [timer, setTimer] = useState(150);
   const [selectedCoordinates, setSelectedCoordinates] = useState(null);
   const [streetViewStartCoordinates, setStreetViewStartCoordinates] = useState(null);
@@ -16,7 +16,7 @@ const MultiplayerGame = () => {
   const markerRef = useRef(null);  // We gebruiken useRef om de marker op te slaan
 
 
-
+  
   const timerInterval = useRef(null);
   const navigate = useNavigate();
   const mapContainerRef = useRef(null);
@@ -43,35 +43,45 @@ const MultiplayerGame = () => {
     const streetViewService = new window.google.maps.StreetViewService();
     streetViewServiceRef.current = streetViewService;
   
+    const startCoordinates = { lat: 52.379189, lng: 4.900826 };
+    const testLocation = { lat: 52.379189, lng: 4.900826 };
+    loadStreetView(testLocation);
+  
     mapRef.current = new window.google.maps.Map(document.getElementById("map"), {
       zoom: 1,
-      center: sharedLocation || { lat: 0, lng: 0 }, // Gebruik gedeelde locatie als middelpunt
+      center: startCoordinates,
       disableDefaultUI: true,
     });
   
     mapRef.current.addListener("click", (event) => {
       const position = { lat: event.latLng.lat(), lng: event.latLng.lng() };
-  
+    
       setSelectedCoordinates(position);
-  
+    
+      // Verwijder de oude marker, indien aanwezig
       if (markerRef.current) {
-        markerRef.current.setMap(null);
+        markerRef.current.setMap(null);  // Verwijder de oude marker van de kaart
       }
-  
+    
+      // Maak een nieuwe marker aan en sla deze op in de markerRef
       markerRef.current = new window.google.maps.Marker({
         position,
         map: mapRef.current,
         title: "Jouw keuze",
       });
-  
+    
+      // Zet de markerPlaced state op true, zodat de knop zichtbaar wordt
       setMarkerPlaced(true);
     });
+    
+    
+    
   
-    console.log("✅ Google Maps geladen:", sharedLocation);
+    console.log("✅ Google Maps geladen:", startCoordinates);
     console.log("Bestaat #street-view in de DOM?", document.getElementById("street-view"));
     setTimeout(() => { findRandomStreetView(); }, 500); // Wacht een halve seconde
   }, []);
-
+  
   // Zorg dat initMap als globale callback beschikbaar is
   useEffect(() => {
     window.initMap = initMap;
@@ -94,7 +104,7 @@ const MultiplayerGame = () => {
       console.log("🔄 Google Maps is al geladen, initMap() starten...");
       initMap();
     }
-
+  
     return () => {
       clearInterval(timerInterval.current);
     };
@@ -106,26 +116,26 @@ const MultiplayerGame = () => {
 
   function loadStreetView(location) {
     console.log("loadStreetView wordt aangeroepen met locatie:", location);
-
+  
     const streetViewService = streetViewServiceRef.current;
     if (!streetViewService) {
       console.error("❌ Street View Service is niet geladen.");
       return;
     }
-
+  
     streetViewService.getPanorama({ location, radius: 5000 }, (data, status) => {
       console.log("Street View Status:", status);
   
       if (status === window.google.maps.StreetViewStatus.OK) {
         console.log("✅ Street View gevonden:", data.location.latLng);
-
+  
         setStreetViewStartCoordinates({
           lat: data.location.latLng.lat(),
           lng: data.location.latLng.lng(),
         });
-
+  
         const streetViewElement = document.getElementById("street-view");
-
+  
         if (!streetViewElement) {
           console.error("❌ Street View element niet gevonden in DOM!");
           return;
@@ -133,7 +143,7 @@ const MultiplayerGame = () => {
   
         streetViewElement.style.width = "100%";
         streetViewElement.style.height = "100vh";
-
+  
         const panoramaInstance = new window.google.maps.StreetViewPanorama(
           streetViewElement,
           {
@@ -147,7 +157,7 @@ const MultiplayerGame = () => {
             showRoadLabels: false,
           }
         );
-
+  
         console.log("✅ Street View is geïnitialiseerd!");
         setPanorama(panoramaInstance);
   
@@ -169,14 +179,8 @@ const MultiplayerGame = () => {
     };
   }
   useEffect(() => {
-    if (sharedLocation) {
-      console.log("Gedeelde locatie ontvangen:", sharedLocation);
-      loadStreetView(sharedLocation); // Gebruik de gedeelde locatie
-    } else {
-      console.warn("Geen gedeelde locatie ontvangen.");
-      loadStreetView({ lat: 52.379189, lng: 4.900826 }); // Fallback locatie
-    }
-  }, [sharedLocation]);
+    loadStreetView({ lat: 52.379189, lng: 4.900826 });
+  }, []);
   
   
   function findRandomStreetView(attempts = 0) {
@@ -193,7 +197,7 @@ const MultiplayerGame = () => {
       }
     });
   }
-
+  
   useEffect(() => {
     if (mapContainerRef.current) {
       mapContainerRef.current.classList.toggle("collapsed", !mapExpanded);
@@ -293,11 +297,11 @@ const MultiplayerGame = () => {
     } else if (distance <= 10) {
       score -= (4 * 0) + ((distance - 4) * 1);
     } else if (distance <= 100) {
-      score -= (6 * 1) + ((distance - 10) * 5);
+      score -= (6 * 1) + ((distance - 10) * 3);
     } else if (distance <= 1000) {
-      score -= (100 * 5) + ((distance - 100) * 10);
+      score -= (100 * 3) + ((distance - 100) * 4);
     } else {
-      score -= (100 * 5) + ((distance - 100) * 15);
+      score -= (1000 * 4) + ((distance - 1000) * 5);
     }
     return Math.max(Math.round(score), 0);
   }
@@ -312,7 +316,7 @@ const MultiplayerGame = () => {
       }
       const score = calculateScore(distance);
   
-      navigate("/resultaat", {
+      navigate("/multiplayer-result", {
         state: {
           elapsedTime, // Verstreken tijd
           distance: distance.toFixed(2), // Afstand
@@ -377,5 +381,8 @@ const MultiplayerGame = () => {
     </div>
   );
 };
+
+
+
 
 export default MultiplayerGame;

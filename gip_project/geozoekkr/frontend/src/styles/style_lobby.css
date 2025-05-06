@@ -22,3 +22,22 @@ table {
   table tr:hover {
     background-color: #f1f1f1;
   }
+  .player-item {
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    color: #333;
+    font-weight: bold;
+  }
+  
+  .player-item.current-user {
+    background-color: #d1e7dd; /* Lichtgroene achtergrond voor de huidige gebruiker */
+    color: #0f5132; /* Donkergroene tekst */
+  }
+  
+  .player-item.host {
+    background-color: #f8d7da; /* Lichtrode achtergrond voor de host */
+    color: #842029; /* Donkerrode tekst */
+    font-weight: bold;
+  }

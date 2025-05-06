@@ -3,7 +3,7 @@ from flask_cors import CORS
 from dotenv import load_dotenv
 import os
 import mysql.connector
-from flask_cors import cross_origin 
+from flask_cors import cross_origin
 from flask_socketio import SocketIO, join_room, leave_room, emit
 from datetime import timedelta
 
@@ -273,60 +273,86 @@ def after_request(response):
 # Maak een nieuwe lobby
 @socketio.on('create_lobby')
 def create_lobby(data):
-    print(f"Create lobby: {data}")
     lobby_id = data['lobby_id']
     username = data['username']
 
+    # Controleer of de lobby al bestaat
     if lobby_id not in lobbies:
-        lobbies[lobby_id] = {'players': [], 'location': None}
+        # Maak een nieuwe lobby aan met de host
+        lobbies[lobby_id] = {'players': [], 'location': None, 'host': username}
 
+    # Voeg de gebruiker toe aan de lijst met spelers als deze nog niet aanwezig is
     if username not in lobbies[lobby_id]['players']:
         lobbies[lobby_id]['players'].append(username)
 
     join_room(lobby_id)
-    emit('lobby_update', lobbies[lobby_id], room=lobby_id)
 
+    # Emit de bijgewerkte lobby-informatie, inclusief de host
+    emit('lobby_update', {'players': lobbies[lobby_id]['players'], 'host': lobbies[lobby_id]['host']}, room=lobby_id)
 @socketio.on('join_lobby')
 def join_lobby(data):
     lobby_id = data['lobby_id']
     username = data['username']
 
-    if lobby_id in lobbies:
-        if username not in lobbies[lobby_id]['players']:
-            lobbies[lobby_id]['players'].append(username)
+    if lobby_id not in lobbies:
+        lobbies[lobby_id] = {'players': [], 'location': None, 'host': None}
 
-        join_room(lobby_id)
-        emit('lobby_update', lobbies[lobby_id], room=lobby_id)
-    else:
-        emit('error', {'message': 'Lobby bestaat niet.'})
-# Verwijder een speler uit een lobby
+    # Controleer of de lobby vol is
+    if len(lobbies[lobby_id]['players']) >= 12:
+        emit('lobby_full', {'message': 'De lobby is vol! Maximaal 12 spelers toegestaan.'}, room=request.sid)
+        return
+
+    if username not in lobbies[lobby_id]['players']:
+        lobbies[lobby_id]['players'].append(username)
+
+    join_room(lobby_id)
+    emit('lobby_update', {'players': lobbies[lobby_id]['players'], 'host': lobbies[lobby_id]['host']}, room=lobby_id)
 @socketio.on('leave_lobby')
 def leave_lobby(data):
     lobby_id = data['lobby_id']
     username = data['username']
 
     if lobby_id in lobbies:
-        lobbies[lobby_id]['players'].remove(username)
-        leave_room(lobby_id)
-        emit('lobby_update', lobbies[lobby_id], room=lobby_id)
+        # Verwijder de speler uit de lobby
+        if username in lobbies[lobby_id]['players']:
+            lobbies[lobby_id]['players'].remove(username)
 
+        # Controleer of de lobby leeg is
+        if not lobbies[lobby_id]['players']:
+            del lobbies[lobby_id]  # Verwijder de lobby als deze leeg is
+            print(f"Lobby {lobby_id} is verwijderd omdat deze leeg is.")
+
+        leave_room(lobby_id)
+        emit('lobby_update', {'players': lobbies.get(lobby_id, {}).get('players', [])}, room=lobby_id)
 # Start het spel in een lobby
+import random
+
+# Voeg een lijst met locaties toe
+city_coordinates = [
+    {"name": "Amsterdam", "lat": 52.379189, "lng": 4.900826},
+    {"name": "New York", "lat": 40.712776, "lng": -74.005974},
+    {"name": "Tokyo", "lat": 35.689487, "lng": 139.691711},
+    {"name": "Sydney", "lat": -33.868820, "lng": 151.209290},
+    {"name": "Cape Town", "lat": -33.924870, "lng": 18.424055},
+    {"name": "Rio de Janeiro", "lat": -22.906847, "lng": -43.172897},
+    {"name": "Moscow", "lat": 55.755825, "lng": 37.617298},
+    {"name": "Paris", "lat": 48.856613, "lng": 2.352222},
+    {"name": "London", "lat": 51.507351, "lng": -0.127758},
+    {"name": "Beijing", "lat": 39.904202, "lng": 116.407394},
+]
+
 @socketio.on('start_game')
 def start_game(data):
-    lobby_id = data['lobby_id']
+    lobby_id = data.get('lobby_id')
     if lobby_id in lobbies:
-        # Genereer een gedeelde locatie voor alle spelers
-        location = get_random_location()
+        location = random.choice(city_coordinates)  # Kies een willekeurige locatie
         lobbies[lobby_id]['location'] = location
-        emit('game_started', {'location': location}, room=lobby_id)
-
-def get_random_location():
-    import random
-    return {
-        'lat': random.uniform(-90, 90),
-        'lng': random.uniform(-180, 180)
-    }
-
+        emit('game_started', {
+            'location': location,
+            'lobby_id': lobby_id,
+            'host': lobbies[lobby_id]['host'],
+            'players': lobbies[lobby_id]['players']
+        }, room=lobby_id)
 @socketio.on('submit_guess')
 def submit_guess(data):
     lobby_id = data['lobby_id']
@@ -342,13 +368,35 @@ def submit_guess(data):
             'guess': guess
         })
 
-        # Stuur een melding naar andere spelers dat deze speler heeft gegokt
-        emit('player_guessed', {'username': username}, room=lobby_id, include_self=False)
-
-        # Controleer of alle spelers hun gok hebben gemaakt
         if len(lobbies[lobby_id]['guesses']) == len(lobbies[lobby_id]['players']):
             results = calculate_results(lobbies[lobby_id])
             emit('results_ready', {'results': results}, room=lobby_id)
+@socketio.on('location_found')
+def location_found(data):
+    lobby_id = data.get('lobby_id')
+    location = data.get('location')
+
+    if lobby_id in lobbies:
+        # Update de locatie in de lobby
+        lobbies[lobby_id]['location'] = location
+
+        # Broadcast de locatie naar alle spelers in de lobby
+        emit('location_found', {'location': location, 'fromHost': True}, room=lobby_id)
+@socketio.on('get_lobbies')
+def get_lobbies():
+    lobbies_list = [{'id': lobby_id, 'players': lobby['players']} for lobby_id, lobby in lobbies.items()]
+    emit('lobbies_list', lobbies_list)
+@socketio.on('host_location_loaded')
+def host_location_loaded(data):
+    lobby_id = data.get('lobby_id')
+    location = data.get('location')
+
+    if lobby_id in lobbies:
+        # Update de locatie in de lobby
+        lobbies[lobby_id]['location'] = location
+
+        # Broadcast de locatie naar alle spelers in de lobby
+        emit('location_found', {'location': location, 'fromHost': True}, room=lobby_id)
 
 def calculate_results(lobby):
     shared_location = lobby['location']

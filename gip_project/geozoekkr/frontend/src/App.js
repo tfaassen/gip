@@ -34,9 +34,9 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/home" element={<Home />}  />
         {/* Beveiligde routes */}
-        <Route path="/spelmodus" element={<PrivateRoute authenticated={isAuthenticated} element={<Spelmodus />} />} />
+        <Route path="/spelmodus"  element={<Spelmodus />}  />
         <Route path="/singleplayer" element={<PrivateRoute authenticated={isAuthenticated} element={<Singleplayer />} />} />
-        <Route path="/multiplayer" element={<PrivateRoute authenticated={isAuthenticated} element={<Multiplayer />} />} />
+        <Route path="/multiplayer"  element={<Multiplayer />}  />
         <Route path="/scoreboard" element={<PrivateRoute authenticated={isAuthenticated} element={<Scoreboard />} />} />
         <Route path="/account" element={<PrivateRoute authenticated={isAuthenticated} element={<Account />} />} />
         <Route path="/locatie" element={<PrivateRoute authenticated={isAuthenticated} element={<Locatie />} />} />
